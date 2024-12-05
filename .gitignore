@@ -12,6 +12,7 @@ env/
 .dvc/
 raw_data.csv
 processed_data.csv
+config
 
 # Model files
 model.pkl
