@@ -10,7 +10,6 @@ env/
 
 # DVC-specific ignores
 .dvc/
-*.dvc
 raw_data.csv
 processed_data.csv
 
