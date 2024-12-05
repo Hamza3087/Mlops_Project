@@ -10,10 +10,9 @@ env/
 
 # DVC-specific ignores
 .dvc/
+*.dvc
 raw_data.csv
 processed_data.csv
-.dvc/config
-
 
 # Model files
 model.pkl
@@ -28,7 +27,7 @@ mlruns/
 # Node.js-specific (if applicable)
 node_modules/
 
-weather_data_pipeline/
+weather_data_pipeline
 
 # IDE/editor settings
 .vscode/
