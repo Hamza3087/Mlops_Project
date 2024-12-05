@@ -10,13 +10,11 @@ env/
 
 # DVC-specific ignores
 .dvc/
-*.dvc
 raw_data.csv
 processed_data.csv
 
 # Model files
 model.pkl
-model.pkl.dvc
 
 # MLFlow-related
 mlruns/
@@ -33,6 +31,7 @@ weather_data_pipeline
 .vscode/
 *.log
 .DS_Store
+!.dvc
 
 # OS-generated files
 Thumbs.db
