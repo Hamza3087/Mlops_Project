@@ -1,39 +1,5 @@
-# Python-specific ignores
-_pycache_/
-*.pyc
-*.pyo
-*.pyd
-
-# Virtual environment
-env/
-*.env
-
-# DVC-specific ignores
-.dvc/
-*.dvc
-raw_data.csv
-processed_data.csv
-
-# Model files
-model.pkl
-model.pkl.dvc
-
-# MLFlow-related
-mlruns/
-
-weather_data_pipeline/
-
-
-# Database files
-*.db
-
-# Node.js-specific (if applicable)
-node_modules/
-
-# IDE/editor settings
-.vscode/
-*.log
-.DS_Store
-
-# OS-generated files
-Thumbs.db
+/raw_data.csv
+/processed_data.csv
+/model.pkl
+/node_modules
+/env
