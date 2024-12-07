@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mlops-app
+  labels:
+    app: mlops-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mlops-app
+  template:
+    metadata:
+      labels:
+        app: mlops-app
+    spec:
+      containers:
+      - name: mlops-app
+        image: hamza0707/mlops_project:latest # Dynamic tag support
+        ports:
+        - containerPort: 80
+        readinessProbe: # Ensures the app is ready before sending traffic
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe: # Monitors the app's health during runtime
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        resources: # Optional: Resource requests and limits
+          requests:
+            memory: "128Mi"
+            cpu: "250m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mlops-service
+  labels:
+    app: mlops-app
+spec:
+  selector:
+    app: mlops-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: LoadBalancer
