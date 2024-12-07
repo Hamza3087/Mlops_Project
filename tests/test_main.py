@@ -1,9 +1,13 @@
+import sys
+import os
 import pytest
 from unittest.mock import MagicMock
 import pandas as pd
-from sqlalchemy.orm import Session
-from mlops_project.app import signup, login, predict  # Update this path
 
+# Add the project root directory to sys.path so Python can find mlops_project
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from app import signup, login, predict  # Correct the import to use app.py directly
 
 # Mocking the User model
 class MockUser:
@@ -15,7 +19,7 @@ class MockUser:
 # Mock session (replace the actual database session)
 @pytest.fixture
 def db():
-    db = MagicMock(Session)
+    db = MagicMock()
     db.query.return_value.filter.return_value.first.return_value = None  # No user exists initially
     return db
 
@@ -59,4 +63,3 @@ def test_predict():
     model = MockModel()
     response = predict(model, 60.0, 10.0)
     assert response["temperature"] == 25.0
-
