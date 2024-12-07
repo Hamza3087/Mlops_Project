@@ -7,14 +7,14 @@ import pandas as pd
 # Add the project root directory to sys.path so Python can find mlops_project
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from app import signup, login, predict  # Correct the import to use app.py directly
+from app import signup, login, predict  # Import from app.py
 
 # Mocking the User model
 class MockUser:
-    def __init__(self, username, email, password):
+    def __init__(self, username, email, hashed_password):
         self.username = username
         self.email = email
-        self.password = password
+        self.hashed_password = hashed_password
 
 # Mock session (replace the actual database session)
 @pytest.fixture
@@ -27,31 +27,33 @@ def db():
 def test_signup(db):
     # Test creating a new user
     db.query.return_value.filter.return_value.first.return_value = None  # No user exists
-    response = signup(db, "testuser", "testuser@example.com", "password123")
+    user_data = {"username": "testuser", "email": "testuser@example.com", "password": "password123"}
+    response = signup(user_data, db=db)  # Adjusted to match the new signature
     assert response["message"] == "User created successfully"
 
     # Test username already exists
-    db.query.return_value.filter.return_value.first.return_value = MockUser("testuser", "testuser@example.com", "password123")
+    db.query.return_value.filter.return_value.first.return_value = MockUser("testuser", "testuser@example.com", "hashedpassword123")
     with pytest.raises(ValueError):
-        signup(db, "testuser", "anotheruser@example.com", "password123")
+        signup(user_data, db=db)
 
 # Test login function
 def test_login(db):
     # Test valid login
-    mock_user = MockUser("testuser", "testuser@example.com", "password123")
+    mock_user = MockUser("testuser", "testuser@example.com", "hashedpassword123")
     db.query.return_value.filter.return_value.first.return_value = mock_user
-    response = login(db, "testuser", "password123")
+    user_data = {"username": "testuser", "password": "password123"}
+    response = login(user_data, db=db)  # Adjusted to match the new signature
     assert response["message"] == "Login successful"
 
     # Test invalid username
     db.query.return_value.filter.return_value.first.return_value = None
     with pytest.raises(ValueError):
-        login(db, "invaliduser", "password123")
+        login(user_data, db=db)
 
     # Test invalid password
     db.query.return_value.filter.return_value.first.return_value = mock_user
     with pytest.raises(ValueError):
-        login(db, "testuser", "wrongpassword")
+        login(user_data, db=db)
 
 # Test prediction function
 def test_predict():
@@ -61,5 +63,6 @@ def test_predict():
             return [25.0]  # Fake predicted temperature value
 
     model = MockModel()
-    response = predict(model, 60.0, 10.0)
+    data = {"humidity": 60.0, "wind_speed": 10.0}
+    response = predict(model, data)
     assert response["temperature"] == 25.0
