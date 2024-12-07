@@ -29,9 +29,6 @@ class MockUser:
         self.email = email
         self.hashed_password = hashed_password
 
-# Initialize password context for hashing
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 # Mock session (replace the actual database session)
 @pytest.fixture
 def db():
@@ -49,17 +46,22 @@ def test_signup(db):
     assert response["message"] == "User created successfully"
 
     # Test username already exists
-    db.query.return_value.filter.return_value.first.return_value = MockUser("testuser", "testuser@example.com", pwd_context.hash("password123"))
+    db.query.return_value.filter.return_value.first.return_value = MockUser("testuser", "testuser@example.com", "hashedpassword123")
     with pytest.raises(HTTPException):
         signup(user_data, db=db)
 
 # Test login function
 def test_login(db):
+    # Initialize password context for hashing
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
     # Mock the hashed password using passlib's context
     hashed_password = pwd_context.hash("password123")
     mock_user = MockUser("testuser", "testuser@example.com", hashed_password)
     db.query.return_value.filter.return_value.first.return_value = mock_user
     user_data = UserLogin(username="testuser", password="password123")  # Pass Pydantic model instead of dictionary
+
+    # Test valid login
     user_login = login(user_data, db=db)  # Pass Pydantic model instead of dictionary
     response = user_login  # Return the dict directly from FastAPI endpoint
     assert response["message"] == "Login successful"
@@ -71,8 +73,10 @@ def test_login(db):
 
     # Test invalid password (incorrect password)
     db.query.return_value.filter.return_value.first.return_value = mock_user
+    # Simulating an incorrect password
+    incorrect_user_data = UserLogin(username="testuser", password="wrongpassword")
     with pytest.raises(HTTPException):
-        login(user_data, db=db)
+        login(incorrect_user_data, db=db)
 
 # Test prediction function
 def test_predict():
