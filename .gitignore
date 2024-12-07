@@ -10,12 +10,16 @@ env/
 
 # DVC-specific ignores
 .dvc/
+
+# Data files
 raw_data.csv
 processed_data.csv
-config
 
 # Model files
 model.pkl
+
+# Sensitive configuration files (contains auth credentials)
+config
 
 # MLFlow-related
 mlruns/

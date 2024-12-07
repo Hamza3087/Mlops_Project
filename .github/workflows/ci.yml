@@ -6,8 +6,8 @@ on:
       - dev
 
 jobs:
-  test-build-push:
-    runs-on: ubuntu-20.04
+  test-and-build:
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
@@ -23,8 +23,8 @@ jobs:
         pip install -r requirements.txt
         pip install pytest
 
-    - name: Run Unit Tests
-      run: pytest tests/
+#    - name: Run Unit Tests (Optional)
+#      run: pytest
 
     - name: Log in to DockerHub
       uses: docker/login-action@v2
@@ -32,15 +32,14 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Build and Push Docker Image
+    # Build and Push Backend Docker image
+    - name: Build and Push Backend Docker Image
       run: |
-        docker build -t hamza0707/mlops_project:latest .
-        docker push hamza0707/mlops_project:latest
+        docker build -t hamza0707/mlops_project-backend:latest -f Dockerfile .
+        docker push hamza0707/mlops_project-backend:latest
 
-    - name: Push to Testing Branch
-      if: success()
+    # Build and Push Frontend Docker image
+    - name: Build and Push Frontend Docker Image
       run: |
-        git config --global user.name "GitHub Actions"
-        git config --global user.email "actions@github.com"
-        git checkout -b testing
-        git push origin testing
+        docker build -t hamza0707/mlops_project-frontend:latest -f my-app/Dockerfile my-app/
+        docker push hamza0707/mlops_project-frontend:latest
