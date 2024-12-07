@@ -8,6 +8,7 @@ import pandas as pd
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from app import signup, login, predict  # Import from app.py
+from pydantic import BaseModel
 
 # Mocking the User model
 class MockUser:
@@ -28,7 +29,8 @@ def test_signup(db):
     # Test creating a new user
     db.query.return_value.filter.return_value.first.return_value = None  # No user exists
     user_data = {"username": "testuser", "email": "testuser@example.com", "password": "password123"}
-    response = signup(user_data, db=db)  # Adjusted to match the new signature
+    user_create = signup(user_data, db=db)  # Adjusted to pass UserCreate model
+    response = user_create.dict()  # Pydantic model to dict conversion
     assert response["message"] == "User created successfully"
 
     # Test username already exists
@@ -42,7 +44,8 @@ def test_login(db):
     mock_user = MockUser("testuser", "testuser@example.com", "hashedpassword123")
     db.query.return_value.filter.return_value.first.return_value = mock_user
     user_data = {"username": "testuser", "password": "password123"}
-    response = login(user_data, db=db)  # Adjusted to match the new signature
+    user_login = login(user_data, db=db)  # Adjusted to pass UserLogin model
+    response = user_login.dict()  # Pydantic model to dict conversion
     assert response["message"] == "Login successful"
 
     # Test invalid username
@@ -64,5 +67,5 @@ def test_predict():
 
     model = MockModel()
     data = {"humidity": 60.0, "wind_speed": 10.0}
-    response = predict(model, data)
+    response = predict(model, data)  # Correct the way we pass the data
     assert response["temperature"] == 25.0
