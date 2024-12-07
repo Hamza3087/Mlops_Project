@@ -2,7 +2,8 @@ import pytest
 from unittest.mock import MagicMock
 import pandas as pd
 from sqlalchemy.orm import Session
-from app import signup, login, predict  # Assuming the functions are in main.py
+from mlops_project.app import signup, login, predict  # Update this path
+
 
 # Mocking the User model
 class MockUser:
