@@ -1,29 +1,61 @@
-from sqlalchemy.orm import Session
-from models import User
-import pickle
+import pytest
+from unittest.mock import MagicMock
 import pandas as pd
+from sqlalchemy.orm import Session
+from app import signup, login, predict  # Assuming the functions are in main.py
 
-# Signup function
-def signup(db: Session, username: str, email: str, password: str):
-    existing_user = db.query(User).filter(User.username == username).first()
-    if existing_user:
-        raise ValueError("Username already exists")
-    new_user = User(username=username, email=email, password=password)
-    db.add(new_user)
-    db.commit()
-    return {"message": "User created successfully"}
+# Mocking the User model
+class MockUser:
+    def __init__(self, username, email, password):
+        self.username = username
+        self.email = email
+        self.password = password
 
-# Login function
-def login(db: Session, username: str, password: str):
-    user = db.query(User).filter(User.username == username).first()
-    if not user:
-        raise ValueError("User not found")
-    if user.password != password:
-        raise ValueError("Incorrect password")
-    return {"message": "Login successful"}
+# Mock session (replace the actual database session)
+@pytest.fixture
+def db():
+    db = MagicMock(Session)
+    db.query.return_value.filter.return_value.first.return_value = None  # No user exists initially
+    return db
 
-# Prediction function
-def predict(model, humidity: float, wind_speed: float):
-    df = pd.DataFrame([[humidity, wind_speed]], columns=["humidity", "wind_speed"])
-    temperature = model.predict(df)[0]
-    return {"temperature": temperature}
+# Test signup function
+def test_signup(db):
+    # Test creating a new user
+    db.query.return_value.filter.return_value.first.return_value = None  # No user exists
+    response = signup(db, "testuser", "testuser@example.com", "password123")
+    assert response["message"] == "User created successfully"
+
+    # Test username already exists
+    db.query.return_value.filter.return_value.first.return_value = MockUser("testuser", "testuser@example.com", "password123")
+    with pytest.raises(ValueError):
+        signup(db, "testuser", "anotheruser@example.com", "password123")
+
+# Test login function
+def test_login(db):
+    # Test valid login
+    mock_user = MockUser("testuser", "testuser@example.com", "password123")
+    db.query.return_value.filter.return_value.first.return_value = mock_user
+    response = login(db, "testuser", "password123")
+    assert response["message"] == "Login successful"
+
+    # Test invalid username
+    db.query.return_value.filter.return_value.first.return_value = None
+    with pytest.raises(ValueError):
+        login(db, "invaliduser", "password123")
+
+    # Test invalid password
+    db.query.return_value.filter.return_value.first.return_value = mock_user
+    with pytest.raises(ValueError):
+        login(db, "testuser", "wrongpassword")
+
+# Test prediction function
+def test_predict():
+    # Mocking the model's predict method
+    class MockModel:
+        def predict(self, df):
+            return [25.0]  # Fake predicted temperature value
+
+    model = MockModel()
+    response = predict(model, 60.0, 10.0)
+    assert response["temperature"] == 25.0
+
