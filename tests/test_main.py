@@ -1,13 +1,18 @@
 import pytest
 from fastapi.testclient import TestClient
-from app import app
+import sys
+import os
+
+# Add the project root directory to the Python path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from app import app  # Import FastAPI app from app.py
 from models import User, Base
 from database import SessionLocal, get_db
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from unittest.mock import patch
 import pickle
-import pandas as pd
 
 # Mock Database Setup
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"  # Use SQLite for testing
@@ -23,6 +28,7 @@ def override_get_db():
     finally:
         db.close()
 
+# Override FastAPI dependency with test DB
 app.dependency_overrides[get_db] = override_get_db
 
 # Initialize TestClient
@@ -37,6 +43,7 @@ def test_signup_user():
     )
     assert response.status_code == 200
     assert response.json() == {"message": "User created successfully"}
+
 
 def test_signup_existing_user():
     client.post("/signup", json={"username": "testuser", "email": "testuser@example.com", "password": "test123"})
@@ -57,12 +64,14 @@ def test_login_user():
     assert response.status_code == 200
     assert response.json() == {"message": "Login successful"}
 
+
 def test_login_user_not_found():
     response = client.post(
         "/login", json={"username": "unknownuser", "password": "pass123"}
     )
     assert response.status_code == 404
     assert response.json() == {"detail": "User not found"}
+
 
 def test_login_incorrect_password():
     client.post("/signup", json={"username": "wrongpassuser", "email": "wrong@example.com", "password": "pass123"})
@@ -74,20 +83,18 @@ def test_login_incorrect_password():
 
 
 # 3. Test Prediction Endpoint
-def test_prediction_valid_data():
-    # Mock the pickle model's `predict` method
-    mock_model = pickle.dumps(MockModel())
+class MockModel:
+    def predict(self, df):
+        return [25.5]  # Mock prediction value
 
-    with patch("builtins.open", create=True) as mock_open, patch("pickle.load", return_value=MockModel()):
+
+def test_prediction_valid_data():
+    with patch("builtins.open", create=True), patch("pickle.load", return_value=MockModel()):
         response = client.post(
             "/predict", json={"humidity": 50, "wind_speed": 10}
         )
     assert response.status_code == 200
     assert "temperature" in response.json()
-
-class MockModel:
-    def predict(self, df):
-        return [25.5]  # Mock prediction value
 
 
 def test_prediction_invalid_data():
@@ -95,4 +102,3 @@ def test_prediction_invalid_data():
         "/predict", json={"humidity": "not a number", "wind_speed": 10}
     )
     assert response.status_code == 422  # Unprocessable entity
-
