@@ -1,6 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
-from main import app
+from app import app
 from models import User, Base
 from database import SessionLocal, get_db
 from sqlalchemy import create_engine
