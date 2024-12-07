@@ -26,13 +26,13 @@ jobs:
         python-version: '3.9'
 
     # Uncomment if you need to run tests
-    # - name: Install dependencies
-    #   run: |
-    #     pip install -r requirements.txt
-    #     pip install pytest
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install pytest
 
-    # - name: Run Unit Tests
-    #   run: pytest tests/test_main.py
+    - name: Run Unit Tests
+      run: pytest tests/test_main.py
 
   push-to-testing:
     needs: test-build-deploy
