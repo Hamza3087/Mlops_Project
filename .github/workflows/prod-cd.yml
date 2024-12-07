@@ -10,32 +10,32 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Debug: List Files in Repository
-      run: ls -R
+      - name: Debug: List Files in Repository
+        run: ls -R
 
-    - name: Validate Kubernetes Deployment File
-      run: |
-        if [ ! -f kubernetes-deployment.yml ]; then
-          echo "Error: kubernetes-deployment.yml not found."
-          exit 1
-        fi
-        echo "kubernetes-deployment.yml found. Proceeding to deployment."
+      - name: Validate Kubernetes Deployment File
+        run: |
+          if [ ! -f kubernetes-deployment.yml ]; then
+            echo "Error: kubernetes-deployment.yml not found."
+            exit 1
+          fi
+          echo "kubernetes-deployment.yml found. Proceeding to deployment."
 
-    - name: Log in to DockerHub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Log in to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Set up kubectl
-      uses: azure/setup-kubectl@v3
-      with:
-        version: 'latest'
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
 
-    - name: Deploy to Production Kubernetes
-      run: |
-        kubectl apply -f kubernetes-deployment.yml
-        kubectl rollout status deployment/mlops-app
+      - name: Deploy to Production Kubernetes
+        run: |
+          kubectl apply -f kubernetes-deployment.yml
+          kubectl rollout status deployment/mlops-app
