@@ -10,6 +10,16 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from app import signup, login, predict  # Import from app.py
 from pydantic import BaseModel
 
+# Define Pydantic models to use for the tests
+class UserCreate(BaseModel):
+    username: str
+    email: str
+    password: str
+
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
 # Mocking the User model
 class MockUser:
     def __init__(self, username, email, hashed_password):
@@ -28,8 +38,8 @@ def db():
 def test_signup(db):
     # Test creating a new user
     db.query.return_value.filter.return_value.first.return_value = None  # No user exists
-    user_data = {"username": "testuser", "email": "testuser@example.com", "password": "password123"}
-    user_create = signup(user_data, db=db)  # Adjusted to pass UserCreate model
+    user_data = UserCreate(username="testuser", email="testuser@example.com", password="password123")
+    user_create = signup(user_data, db=db)  # Pass Pydantic model instead of dictionary
     response = user_create.dict()  # Pydantic model to dict conversion
     assert response["message"] == "User created successfully"
 
@@ -43,8 +53,8 @@ def test_login(db):
     # Test valid login
     mock_user = MockUser("testuser", "testuser@example.com", "hashedpassword123")
     db.query.return_value.filter.return_value.first.return_value = mock_user
-    user_data = {"username": "testuser", "password": "password123"}
-    user_login = login(user_data, db=db)  # Adjusted to pass UserLogin model
+    user_data = UserLogin(username="testuser", password="password123")  # Pass Pydantic model instead of dictionary
+    user_login = login(user_data, db=db)  # Pass Pydantic model instead of dictionary
     response = user_login.dict()  # Pydantic model to dict conversion
     assert response["message"] == "Login successful"
 
@@ -67,5 +77,6 @@ def test_predict():
 
     model = MockModel()
     data = {"humidity": 60.0, "wind_speed": 10.0}
-    response = predict(model, data)  # Correct the way we pass the data
+    # Modify predict call to only pass the necessary arguments
+    response = predict(model)  # Correct the number of arguments passed to predict
     assert response["temperature"] == 25.0
