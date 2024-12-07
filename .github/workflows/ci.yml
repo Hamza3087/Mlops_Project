@@ -44,6 +44,9 @@ jobs:
         docker build -t hamza0707/mfrontend:latest -f my-app/Dockerfile my-app/
         docker push hamza0707/mfrontend:latest
 
+    - name: Pull remote changes
+      run: git pull origin testing
+
     - name: Push to Testing Branch
       run: |
         git config --global user.name "github-actions[bot]"
