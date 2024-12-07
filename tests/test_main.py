@@ -3,6 +3,8 @@ import os
 import pytest
 from unittest.mock import MagicMock
 import pandas as pd
+from fastapi import HTTPException
+from passlib.context import CryptContext  # Import passlib for password hashing
 
 # Add the project root directory to sys.path so Python can find mlops_project
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -27,6 +29,9 @@ class MockUser:
         self.email = email
         self.hashed_password = hashed_password
 
+# Initialize password context for hashing
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 # Mock session (replace the actual database session)
 @pytest.fixture
 def db():
@@ -44,14 +49,15 @@ def test_signup(db):
     assert response["message"] == "User created successfully"
 
     # Test username already exists
-    db.query.return_value.filter.return_value.first.return_value = MockUser("testuser", "testuser@example.com", "hashedpassword123")
+    db.query.return_value.filter.return_value.first.return_value = MockUser("testuser", "testuser@example.com", pwd_context.hash("password123"))
     with pytest.raises(HTTPException):
         signup(user_data, db=db)
 
 # Test login function
 def test_login(db):
-    # Test valid login
-    mock_user = MockUser("testuser", "testuser@example.com", "hashedpassword123")
+    # Mock the hashed password using passlib's context
+    hashed_password = pwd_context.hash("password123")
+    mock_user = MockUser("testuser", "testuser@example.com", hashed_password)
     db.query.return_value.filter.return_value.first.return_value = mock_user
     user_data = UserLogin(username="testuser", password="password123")  # Pass Pydantic model instead of dictionary
     user_login = login(user_data, db=db)  # Pass Pydantic model instead of dictionary
@@ -63,7 +69,7 @@ def test_login(db):
     with pytest.raises(HTTPException):
         login(user_data, db=db)
 
-    # Test invalid password
+    # Test invalid password (incorrect password)
     db.query.return_value.filter.return_value.first.return_value = mock_user
     with pytest.raises(HTTPException):
         login(user_data, db=db)
