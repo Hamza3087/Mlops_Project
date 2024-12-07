@@ -6,6 +6,7 @@ API_KEY = "1720969d247faec50cd966e8ac0f922e"
 CITY = "Lahore"
 URL = f"http://api.openweathermap.org/data/2.5/forecast?q={CITY}&appid={API_KEY}&units=metric"
 
+
 def fetch_weather_data():
     response = requests.get(URL)
     if response.status_code == 200:
