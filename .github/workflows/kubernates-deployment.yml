@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: mlops-app
-        image: hamza0707/mlops_project:latest # Dynamic tag support
+        image: hamza0707/mlops_project:latest 
         ports:
         - containerPort: 80
         readinessProbe: # Ensures the app is ready before sending traffic
