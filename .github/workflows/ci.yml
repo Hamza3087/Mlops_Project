@@ -70,7 +70,7 @@ jobs:
 
     - name: Push changes to testing branch
       run: |
-        git checkout testing || git checkout -b testing
+        git checkout testing 
         git merge dev
         git push origin testing
-        
+
