@@ -36,11 +36,11 @@ jobs:
     # Build and Push Backend Docker image
     - name: Build and Push Backend Docker Image
       run: |
-        docker build -t hamza0707/mlops_project-backend:latest -f Dockerfile .
-        docker push hamza0707/mlops_project-backend:latest
+        docker build -t hamza0707/mbackend:latest -f Dockerfile .
+        docker push hamza0707/mbackend:latest
 
     # Build and Push Frontend Docker image
     - name: Build and Push Frontend Docker Image
       run: |
-        docker build -t hamza0707/mlops_project-frontend:latest -f my-app/Dockerfile my-app/
-        docker push hamza0707/mlops_project-frontend:latest
+        docker build -t hamza0707/mfrontend:latest -f my-app/Dockerfile my-app/
+        docker push hamza0707/mfrontend:latest
