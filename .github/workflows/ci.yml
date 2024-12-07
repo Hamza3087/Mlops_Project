@@ -13,7 +13,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
       with:
-        token: ${{ secrets.GH_PAT }}
+        token: ${{ secrets.MLPROJECT }}
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -53,4 +53,4 @@ jobs:
         else
           git checkout -b testing
         fi
-        git push https://${{ secrets.GH_PAT }}@github.com/Hamza3087/Mlops_Project.git testing
+        git push https://${{ secrets.MLPROJECT }}@github.com/Hamza3087/Mlops_Project.git testing

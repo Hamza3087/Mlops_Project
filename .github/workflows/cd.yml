@@ -13,7 +13,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
       with:
-        token: ${{ secrets.GH_PAT }}
+        token: ${{ secrets.MLPROJECT }}
 
     - name: Log in to DockerHub
       uses: docker/login-action@v2
@@ -46,4 +46,4 @@ jobs:
         else
           git checkout -b prod
         fi
-        git push https://${{ secrets.GH_PAT }}@github.com/Hamza3087/Mlops_Project.git prod
+        git push https://${{ secrets.MLPROJECT }}@github.com/Hamza3087/Mlops_Project.git prod
