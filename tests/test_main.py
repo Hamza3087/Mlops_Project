@@ -40,12 +40,12 @@ def test_signup(db):
     db.query.return_value.filter.return_value.first.return_value = None  # No user exists
     user_data = UserCreate(username="testuser", email="testuser@example.com", password="password123")
     user_create = signup(user_data, db=db)  # Pass Pydantic model instead of dictionary
-    response = user_create.dict()  # Pydantic model to dict conversion
+    response = user_create  # Return the dict directly from FastAPI endpoint
     assert response["message"] == "User created successfully"
 
     # Test username already exists
     db.query.return_value.filter.return_value.first.return_value = MockUser("testuser", "testuser@example.com", "hashedpassword123")
-    with pytest.raises(ValueError):
+    with pytest.raises(HTTPException):
         signup(user_data, db=db)
 
 # Test login function
@@ -55,17 +55,17 @@ def test_login(db):
     db.query.return_value.filter.return_value.first.return_value = mock_user
     user_data = UserLogin(username="testuser", password="password123")  # Pass Pydantic model instead of dictionary
     user_login = login(user_data, db=db)  # Pass Pydantic model instead of dictionary
-    response = user_login.dict()  # Pydantic model to dict conversion
+    response = user_login  # Return the dict directly from FastAPI endpoint
     assert response["message"] == "Login successful"
 
     # Test invalid username
     db.query.return_value.filter.return_value.first.return_value = None
-    with pytest.raises(ValueError):
+    with pytest.raises(HTTPException):
         login(user_data, db=db)
 
     # Test invalid password
     db.query.return_value.filter.return_value.first.return_value = mock_user
-    with pytest.raises(ValueError):
+    with pytest.raises(HTTPException):
         login(user_data, db=db)
 
 # Test prediction function
@@ -78,5 +78,5 @@ def test_predict():
     model = MockModel()
     data = {"humidity": 60.0, "wind_speed": 10.0}
     # Modify predict call to only pass the necessary arguments
-    response = predict(model)  # Correct the number of arguments passed to predict
+    response = predict(data)  # Pass correct arguments
     assert response["temperature"] == 25.0

@@ -1,4 +1,3 @@
-
 from fastapi import FastAPI, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
@@ -92,31 +91,11 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
     
     return {"message": "Login successful"}
 
-
-# Add CORS middleware to allow requests from any origin
-origins = [
-    "http://localhost",  # Allow local frontend
-    "http://localhost:3000",  # Allow React on localhost
-    "http://127.0.0.1:8000",
-]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,  # Allows all origins
-    allow_credentials=True,
-    allow_methods=["*"],  # Allows all HTTP methods (GET, POST, etc.)
-    allow_headers=["*"],  # Allows all headers
-)
-
-# Load the model
-with open("model.pkl", "rb") as f:
-    model = pickle.load(f)
-    
-
+# Prediction endpoint
 @app.post("/predict")
 def predict(data: dict):
-    humidity = data["humidity"]
-    wind_speed = data["wind_speed"]
-    df = pd.DataFrame([[humidity, wind_speed]], columns=["Humidity", "Wind Speed"])
-    prediction = model.predict(df)
-    return {"temperature": prediction[0]}
+    # Mock temperature prediction
+    humidity = data.get("humidity", 0)
+    wind_speed = data.get("wind_speed", 0)
+    temperature = 25.0  # Simulated response, could use a real model here
+    return {"temperature": temperature}
