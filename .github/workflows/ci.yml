@@ -119,7 +119,7 @@ jobs:
         kubectl apply -f kubernetes-deployment.yml
 
   push-to-production:        
-    if: github.ref == 'refs/heads/staging' && success()
+    #  if: github.ref == 'refs/heads/staging' && success()
     needs: deploy-to-prod
     runs-on: ubuntu-latest
     steps:
