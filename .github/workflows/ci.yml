@@ -1,6 +1,5 @@
-name: CI Pipeline - Dev to Testing
+name: CI/CD Pipeline - Dev to Prod
 
-# Ensure the workflow has write permissions
 permissions:
   contents: write
   security-events: write  # Required for CodeQL to upload results
@@ -9,9 +8,12 @@ on:
   push:
     branches:
       - dev
+      - staging
 
 jobs:
+  # CI Job: Test, Build, and Push to Staging
   test-build-deploy:
+    if: github.ref == 'refs/heads/dev'
     runs-on: ubuntu-latest
 
     steps:
@@ -33,7 +35,6 @@ jobs:
     # - name: Run Unit Tests
     #   run: pytest tests/test_main.py
 
-    # # Log in to DockerHub
     # - name: Log in to DockerHub
     #   uses: docker/login-action@v2
     #   with:
@@ -50,35 +51,49 @@ jobs:
     #     docker build -t hamza0707/mfrontend:latest -f my-app/Dockerfile my-app/
     #     docker push hamza0707/mfrontend:latest
 
-    # # Install Docker Compose
-    # - name: Install Docker Compose
-    #   run: |
-    #     sudo apt-get update
-    #     sudo apt-get install -y docker-compose
-
-    # - name: Run Docker Compose
-    #   run: |
-    #     docker-compose -f dockercompose.yml up -d
-    #   env:
-    #     DATABASE_URL: sqlite:///./test.db  # Pass environment variables if needed
-
-  # Push to staging after successful tests on dev
-  push-to-staging:
-    if: github.ref == 'refs/heads/dev' && success()
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0  # Fetch all history so that all branches are available
-
-    - name: Set up Git for pushing
+    - name: Push to Staging Branch
       run: |
-        git config user.name "github-actions"
-        git config user.email "github-actions@github.com"
-        git remote set-url origin https://x-access-token:${{ secrets.MLPROJECT }}@github.com/${{ github.repository }}.git
-
-    - name: Push changes to staging
-      run: |
+        git config --global user.name "github-actions"
+        git config --global user.email "github-actions@github.com"
         git checkout staging || git checkout -b staging
-        git merge dev
         git push origin staging
+
+  # CD Job: Deploy to Production
+  deploy-to-prod:
+    if: github.ref == 'refs/heads/staging'
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.MLPROJECT }}
+
+    - name: Log in to DockerHub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'latest'
+
+    - name: Set up Minikube
+      run: |
+        curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+        chmod +x minikube
+        sudo mv minikube /usr/local/bin/
+        minikube start
+
+    - name: Deploy to Kubernetes
+      run: |
+        kubectl apply -f kubernetes-deployment.yml
+
+    - name: Push to Production Branch
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git checkout production || git checkout -b production
+        git push https://${{ secrets.MLPROJECT }}@github.com/Hamza3087/Mlops_Project.git production
