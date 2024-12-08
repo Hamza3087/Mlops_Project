@@ -15,23 +15,47 @@ spec:
         app: mlops-app
     spec:
       containers:
-      - name: mlops-app
-        image: hamza0707/mlops_project:latest 
+      - name: mfrontend
+        image: hamza0707/mfrontend:latest 
         ports:
         - containerPort: 80
-        readinessProbe: # Ensures the app is ready before sending traffic
+        readinessProbe: # Ensures the frontend is ready before sending traffic
           httpGet:
             path: /
             port: 80
           initialDelaySeconds: 5
           periodSeconds: 10
-        livenessProbe: # Monitors the app's health during runtime
+        livenessProbe: # Monitors the frontend's health during runtime
           httpGet:
             path: /
             port: 80
           initialDelaySeconds: 15
           periodSeconds: 20
-        resources: # Optional: Resource requests and limits
+        resources: # Resource requests and limits for frontend
+          requests:
+            memory: "128Mi"
+            cpu: "250m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+
+      - name: mbackend
+        image: hamza0707/mbackend:latest
+        ports:
+        - containerPort: 8080  # Assuming the backend runs on port 8080
+        readinessProbe: # Ensures the backend is ready before sending traffic
+          httpGet:
+            path: /health  # Assuming you have a health check endpoint for the backend
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe: # Monitors the backend's health during runtime
+          httpGet:
+            path: /health  # Assuming you have a health check endpoint for the backend
+            port: 8080
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        resources: # Resource requests and limits for backend
           requests:
             memory: "128Mi"
             cpu: "250m"
@@ -51,5 +75,8 @@ spec:
   ports:
     - protocol: TCP
       port: 80
-      targetPort: 80
+      targetPort: 80  # Expose frontend on port 80
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080  # Expose backend on port 8080
   type: LoadBalancer
