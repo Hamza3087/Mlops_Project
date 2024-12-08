@@ -3,7 +3,7 @@ name: CD Pipeline - Testing to Prod
 on:
   push:
     branches:
-      - testing
+      - staging
 
 jobs:
   deploy-to-prod:
@@ -37,15 +37,14 @@ jobs:
       run: |
         kubectl apply -f kubernetes-deployment.yml
 
-    - name: Push to Prod Branch
+    - name: Push to Production Branch
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
         if git rev-parse --verify origin/prod >/dev/null 2>&1; then
-          git checkout prod
+          git checkout production
         else
-          git checkout -b prod
+          git checkout -b production
         fi
-        git push https://${{ secrets.MLPROJECT }}@github.com/Hamza3087/Mlops_Project.git prod
+        git push https://${{ secrets.MLPROJECT }}@github.com/Hamza3087/Mlops_Project.git production
 
-        
