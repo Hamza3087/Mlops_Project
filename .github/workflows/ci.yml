@@ -62,17 +62,14 @@ jobs:
     #   env:
     #     DATABASE_URL: sqlite:///./test.db  # Pass environment variables if needed
 
-  push-to-testing:
-    needs: test-build-deploy
+  # Push to staging after successful tests on dev
+  push-to-staging:
     if: github.ref == 'refs/heads/dev' && success()
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout all branches
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v2
       with:
-        token: ${{ secrets.MLPROJECT }}
-        fetch-depth: 0  # Fetch all history so all branches are available
+        fetch-depth: 0  # Fetch all history so that all branches are available
 
     - name: Set up Git for pushing
       run: |
@@ -80,18 +77,8 @@ jobs:
         git config user.email "github-actions@github.com"
         git remote set-url origin https://x-access-token:${{ secrets.MLPROJECT }}@github.com/${{ github.repository }}.git
 
-    - name: Attempt to merge dev into testing
+    - name: Push changes to staging
       run: |
-        git checkout testing || git checkout -b testing
-        git merge dev || true  # Allow the workflow to proceed even if there are conflicts
-
-    # - name: Resolve conflicts (if any)
-    #   if: ${{ failure() }}
-    #   run: |
-    #     echo "Resolving conflicts automatically for .github/workflows/ci.yml"
-    #     git checkout --ours .github/workflows/ci.yml  # Keep changes from the `testing` branch
-    #     git add .github/workflows/ci.yml
-    #     git commit -m "Resolved merge conflict in ci.yml"
-
-    - name: Push changes to testing branch
-      run: git push origin testing
+        git checkout staging || git checkout -b staging
+        git merge dev
+        git push origin staging
