@@ -15,6 +15,7 @@ function WeatherPrediction() {
         setPrediction(data.temperature);
     };
 
+
     return (
         <div>
             <h1>Weather Predictor</h1>
