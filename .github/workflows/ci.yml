@@ -9,6 +9,7 @@ on:
   push:
     branches:
       - dev
+      - staging
 
 jobs:
   test-build-deploy:
@@ -65,6 +66,7 @@ jobs:
   # Push to staging after successful tests on dev
   push-to-staging:
     if: github.ref == 'refs/heads/dev' && success()
+    needs: test-build-deploy
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -85,6 +87,7 @@ jobs:
 
   # Deploy to production after successful tests on staging
   deploy-to-prod:
+    needs: push-to-staging
     runs-on: ubuntu-latest
 
     steps:
@@ -117,6 +120,7 @@ jobs:
 
   push-to-production:        
     if: github.ref == 'refs/heads/staging' && success()
+    needs: deploy-to-prod
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
