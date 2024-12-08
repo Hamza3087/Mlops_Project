@@ -1,9 +1,10 @@
 name: CD Pipeline - Testing to Prod
 
 on:
-  push:
-    branches:
-      - staging
+  workflow_run:
+    workflows: ["CI Pipeline - Dev to Testing"]  # Name of the CI pipeline
+    types:
+      - completed
 
 jobs:
   deploy-to-prod:
